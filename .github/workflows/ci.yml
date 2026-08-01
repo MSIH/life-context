@@ -1,0 +1,39 @@
+name: CI
+
+# This workflow is owned by the PUBLIC repo and has no source of truth elsewhere: development
+# happens in a private repo whose own CI runs a larger set of gates, and the snapshot filter
+# deliberately does not publish it. Keep this small — it exists to give readers and outside
+# contributors a green/red signal on their own PRs, not to mirror the private CI surface.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    env:
+      # Throwaway CI value, NOT a secret — server-booting tests require a non-placeholder key.
+      LIFECONTEXT_API_KEY: ci-throwaway-key-0123456789abcdef
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+
+      # Both checks import only `node:` built-ins, so they run before the install.
+      - run: npm run check:boundary
+      - run: npm run check:schema-literal
+
+      - run: npm ci
+      # better-sqlite3 / sqlite-vec are native; rebuild guards against an ABI mismatch.
+      - run: npm rebuild better-sqlite3
+      # No Ollama in CI — the suite passes with the embedder/planner offline.
+      - run: npm test

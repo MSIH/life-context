@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <!-- The capability token lives in the URL path; no-referrer keeps it out of the Referer header
+       on any outbound request/navigation (#163). -->
+  <meta name="referrer" content="no-referrer" />
+  <title>LifeContext · Contacts</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <!-- Token-only UI (#169): the page is reachable only at /<token>/ui/… (UI_URL_TOKEN set); its
+       browser credential is the path token itself, sent as x-api-key. No manual key entry, so no
+       key bar.
+       Deep link (#492): the open contact is mirrored into `?contact=<entity_id>`, so a contact is
+       bookmarkable and survives a refresh. A QUERY param, not a path segment, precisely because of
+       the line above — apiKey() in app.js parses the token with a strict /<token>/ui/<file> path
+       match, so an extra segment would 401 the whole page. -->
+  <header class="topbar">
+    <h1>Contacts</h1>
+    <nav class="navlinks" aria-label="Primary">
+      <a href="./chat.html">Ask</a>
+      <a href="./contacts.html" class="active" aria-current="page">Contacts</a>
+    </nav>
+    <input id="search" type="search" placeholder="Search name, email, phone…" autocomplete="off" />
+    <!-- Single-select picker, not tabs over panels (#332): radiogroup/radio + aria-checked, since
+         role=tab would promise an aria-controls'd tabpanel that doesn't exist. The .active class is
+         the visual state (style.css); aria-checked is the semantic one. Roving tabindex + arrow keys
+         come from wireRadioGroup in app.js — the group is one tab stop. -->
+    <div class="filters" id="kindFilter" role="radiogroup" aria-label="Filter contacts by kind">
+      <button data-kind="" class="active" type="button" role="radio" aria-checked="true" tabindex="0">All</button>
+      <button data-kind="person" type="button" role="radio" aria-checked="false" tabindex="-1">People</button>
+      <button data-kind="org" type="button" role="radio" aria-checked="false" tabindex="-1">Orgs</button>
+    </div>
+    <button id="newContact" type="button" class="primary">+ New</button>
+    <button id="duplicates" type="button" title="Review probable duplicate contacts">Duplicates</button>
+    <button id="proposed" type="button" title="Review auto-proposed contacts awaiting approval">Proposed</button>
+    <button id="directory" type="button" title="Browse the loaded contacts directory and promote entries into the graph">Directory</button>
+    <button id="saveTop" type="button" class="primary" hidden>Save</button>
+  </header>
+
+  <main class="layout">
+    <aside class="list" id="list" aria-label="Contacts"></aside>
+    <section class="detail" id="detail">
+      <p class="empty">Select a contact, or create one.</p>
+    </section>
+
+    <!-- Duplicates review overlay (#120): consumes GET /api/v1/entities/duplicates + POST
+         /api/v1/entities/merge. Fixed drawer over the content; hidden until the topbar Duplicates
+         button (or a 409 alias conflict) opens it. role=dialog + focus move/restore in app.js.
+         "Not a duplicate" (#302, per-row in app.js) + Clear dismissals (this headbar) are a
+         persisted "not a duplicate" decision (duplicate_dismissals), not a merge. -->
+    <div id="dupPanel" class="duppanel" role="dialog" aria-modal="true" aria-labelledby="dupTitle" hidden>
+      <div class="dup-headbar">
+        <h2 id="dupTitle">Probable duplicates</h2>
+        <button id="dupClearDismissed" type="button" class="ghost" hidden>Clear dismissals</button>
+        <button id="dupClose" type="button" class="ghost" title="Close" aria-label="Close duplicates panel">✕</button>
+      </div>
+      <div id="dupManual" class="dup-manual"></div>
+      <div id="dupList"></div>
+    </div>
+
+    <!-- Proposed-entities review overlay (#143): consumes GET /api/v1/entities/proposed +
+         POST /api/v1/entities/proposed/:id/{approve,reject} (backend #119). Same drawer pattern
+         as #dupPanel — role=dialog + focus move/restore in app.js. Approve mints/links a contact;
+         Reject marks it rejected (append-only, never re-raised). -->
+    <div id="propPanel" class="duppanel" role="dialog" aria-modal="true" aria-labelledby="propTitle" hidden>
+      <div class="dup-headbar">
+        <h2 id="propTitle">Proposed contacts</h2>
+        <!-- Status filter (#300), same radiogroup idiom as #kindFilter above (#332). Default Pending
+             preserves today's behavior; Rejected is what makes the reopen-able backlog visible at all. -->
+        <div class="filters" id="propStatusFilter" role="radiogroup" aria-label="Filter proposals by status">
+          <button data-status="pending" class="active" type="button" role="radio" aria-checked="true" tabindex="0">Pending</button>
+          <button data-status="rejected" type="button" role="radio" aria-checked="false" tabindex="-1">Rejected</button>
+          <button data-status="approved" type="button" role="radio" aria-checked="false" tabindex="-1">Approved</button>
+        </div>
+        <button id="propReopenSelected" type="button" hidden>Reopen selected (0)</button>
+        <button id="propStage" type="button" title="Stage review proposals from the loaded contacts directory">Stage from directory</button>
+        <button id="propClose" type="button" class="ghost" title="Close" aria-label="Close proposed contacts panel">✕</button>
+      </div>
+      <div id="propList"></div>
+    </div>
+
+    <!-- Side contact directory (#299): consumes GET /api/v1/directory + POST /api/v1/directory/promote.
+         Same drawer pattern as #dupPanel/#propPanel. Rows are ordered by IMPACT (the artifacts
+         promoting would retro-link), because 1,569 names are untriageable alphabetically. Promotion is
+         direct — the directory is the user's own export, so browsing and clicking IS the approval. -->
+    <div id="dirPanel" class="duppanel" role="dialog" aria-modal="true" aria-labelledby="dirTitle" hidden>
+      <div class="dup-headbar">
+        <h2 id="dirTitle">Contacts directory</h2>
+        <input id="dirSearch" type="search" placeholder="Search name, phone or email…" aria-label="Search the directory" autocomplete="off">
+        <span id="dirCount" class="dup-reason"></span>
+        <button id="dirPromote" type="button" class="primary" disabled>Promote selected (0)</button>
+        <button id="dirClose" type="button" class="ghost" title="Close" aria-label="Close directory panel">✕</button>
+      </div>
+      <!-- Duplicated top+bottom (#523): a list that runs to 50+ rows made the bottom-only pager
+           require scrolling down every time. Both bars are driven by the same dirOffset/dirPageLimit
+           state in app.js, never two independently-tracked ones, so they can't drift out of sync. -->
+      <div class="dir-pager">
+        <button id="dirPrevTop" type="button" class="ghost">‹ Prev</button>
+        <label class="dir-pagesize"><span>Rows per page</span>
+          <select id="dirPageSizeTop" aria-label="Rows per page">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+          </select>
+        </label>
+        <span id="dirRangeTop" class="dup-reason" aria-live="polite"></span>
+        <button id="dirNextTop" type="button" class="ghost">Next ›</button>
+      </div>
+      <div id="dirList"></div>
+      <div class="dir-pager">
+        <button id="dirPrevBottom" type="button" class="ghost">‹ Prev</button>
+        <label class="dir-pagesize"><span>Rows per page</span>
+          <select id="dirPageSizeBottom" aria-label="Rows per page">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+          </select>
+        </label>
+        <!-- Not aria-live (Copilot review, PR #525): dirRangeTop already announces every page/range
+             change, so a second live region here would double-announce it to screen readers. -->
+        <span id="dirRangeBottom" class="dup-reason"></span>
+        <button id="dirNextBottom" type="button" class="ghost">Next ›</button>
+      </div>
+    </div>
+
+    <!-- New-contact dialog (#329): replaces the old prompt()/confirm() flow, whose confirm() could
+         only ever show generic OK/Cancel buttons — the org/person mapping was invisible and, on top
+         of that, backwards (OK = the less-common org). Same drawer pattern as #dupPanel/#dirPanel;
+         open/close + focus move/restore in app.js. Person is the default/primary kind (more common). -->
+    <div id="newContactPanel" class="duppanel" role="dialog" aria-modal="true" aria-labelledby="newContactTitle" hidden>
+      <div class="dup-headbar">
+        <h2 id="newContactTitle">New contact</h2>
+        <button id="newContactClose" type="button" class="ghost" title="Close" aria-label="Close new contact dialog">✕</button>
+      </div>
+      <div class="field">
+        <label for="newContactName">Name</label>
+        <input id="newContactName" type="text" autocomplete="off">
+      </div>
+      <div class="filters" id="newContactKind" role="radiogroup" aria-label="Contact kind">
+        <button data-kind="person" class="active" type="button" role="radio" aria-checked="true" tabindex="0">Person</button>
+        <button data-kind="org" type="button" role="radio" aria-checked="false" tabindex="-1">Organization</button>
+      </div>
+      <button id="newContactCreate" type="button" class="primary">Create</button>
+    </div>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

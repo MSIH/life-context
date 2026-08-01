@@ -1,0 +1,21 @@
+{
+  "name": "life-context-connector-imessage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Reads ~/Library/Messages/chat.db (read-only, WAL-safe) and syncs messages + photo attachments to LifeContext as message/photo artifacts.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test test.mjs"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "bplist-parser": "^0.3.2"
+  },
+  "devDependencies": {
+    "bplist-creator": "^0.1.1"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  }
+}

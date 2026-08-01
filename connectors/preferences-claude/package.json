@@ -1,0 +1,14 @@
+{
+  "name": "life-context-connector-preferences-claude",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Claude Code SessionStart hook that fetches stored x-agent-preference memories from LifeContext and prints them into the new session's context.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

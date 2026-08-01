@@ -1,0 +1,14 @@
+{
+  "name": "life-context-connector-devsession-claude",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Claude Code SessionEnd/PreCompact hook that turns coding sessions into LifeContext dev_session artifacts.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "life-context-connector-documents",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Batch-scans a document tree (PDF/DOCX/XLSX/PPTX) into LifeContext document artifacts, plus a separate low-priority tesseract OCR worker that enriches image-only PDFs in place.",
+  "main": "scan.js",
+  "scripts": {
+    "test": "node --test test.mjs"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.53",
+    "exceljs": "^4.4.0",
+    "jszip": "^3.10.1",
+    "mammoth": "^1.8.0",
+    "pdfjs-dist": "^4.10.38",
+    "tesseract.js": "^5.1.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

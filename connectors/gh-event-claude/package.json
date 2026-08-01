@@ -1,0 +1,14 @@
+{
+  "name": "life-context-connector-gh-event-claude",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Claude Code PostToolUse hook that turns gh issue/PR creation into LifeContext x-dev-event artifacts.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

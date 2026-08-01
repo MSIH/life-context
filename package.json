@@ -1,0 +1,63 @@
+{
+  "name": "life-context",
+  "version": "0.2.0",
+  "description": "Local-first, self-owned AI memory layer — an independent implementation of the Open Brain concept.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "setup": "node scripts/setup.js",
+    "start": "node src/server.js",
+    "dev": "node scripts/dev-server.js",
+    "test": "node --test test/*.test.mjs",
+    "test:connectors": "node scripts/test-connectors.mjs",
+    "migrate": "node src/migrate.js",
+    "import:contacts": "node src/contacts.js",
+    "consolidate": "node src/consolidate.js",
+    "backfill:relations": "node scripts/backfill-relations.js",
+    "backfill:links": "node scripts/backfill-entity-links.js",
+    "backfill:phones": "node scripts/backfill-phone-aliases.js",
+    "backfill:display-names": "node scripts/backfill-display-names.js",
+    "backfill:geo": "node scripts/backfill-place-labels.js",
+    "directory:load": "node scripts/load-directory.js",
+    "backfill:directory-proposals": "node scripts/backfill-directory-proposals.js",
+    "backfill:pictured-proposals": "node scripts/backfill-pictured-proposals.js",
+    "backfill:directory-attrs": "node scripts/backfill-directory-attrs.js",
+    "backfill:name-prefix-links": "node scripts/backfill-name-prefix-links.js",
+    "fix:name-prefix-confidence": "node scripts/fix-name-prefix-link-confidence.js",
+    "fix:addresses": "node scripts/fix-duplicated-addresses.js",
+    "backfill:handle-aliases": "node scripts/backfill-handle-aliases.js",
+    "heal:name-proposals": "node scripts/heal-name-proposals.js",
+    "backfill:preferences": "node scripts/migrate-preferences.js",
+    "places:cluster": "node scripts/cluster-places.js",
+    "events:cluster": "node scripts/cluster-events.js",
+    "schema:ingest": "node scripts/generate-ingest-schema.js",
+    "check:boundary": "node scripts/check-boundary.js",
+    "check:schema-literal": "node scripts/check-schema-literal.js",
+    "check:handle-aliases": "node scripts/check-handle-aliases.js",
+    "verify:schema-upgrade": "node scripts/verify-schema-upgrade.js",
+    "geocode:build": "node scripts/build-places.js"
+  },
+  "files": [
+    "src/",
+    "scripts/",
+    "schemas/",
+    ".env.example",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "author": "Barry Schneider",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "better-sqlite3": "^12.11.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "openai": "^6.45.0",
+    "sqlite-vec": "^0.1.9",
+    "zod": "^4.4.3"
+  }
+}

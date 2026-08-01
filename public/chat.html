@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <!-- The capability token lives in the URL path; no-referrer keeps it out of the Referer header
+       on any outbound request/navigation (#163). -->
+  <meta name="referrer" content="no-referrer" />
+  <title>LifeContext · Ask</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <!-- Token-only UI (#169): the page is reachable only at /<token>/ui/… (UI_URL_TOKEN set); its
+       browser credential is the path token itself, sent as x-api-key. No manual key entry, so no
+       key bar. -->
+  <header class="topbar">
+    <h1>Ask</h1>
+    <nav class="navlinks" aria-label="Primary">
+      <a href="./chat.html" class="active" aria-current="page">Ask</a>
+      <a href="./contacts.html">Contacts</a>
+    </nav>
+    <div class="filters" id="modeToggle" role="group" aria-label="Result mode" title="search = rich artifact results; recall = simple text matches">
+      <button data-mode="search" class="active" type="button" aria-pressed="true">Search</button>
+      <button data-mode="recall" type="button" aria-pressed="false">Recall</button>
+    </div>
+  </header>
+
+  <!-- Read-only memory query: a transcript of queries + result cards. No memory mutation here. -->
+  <main class="chat">
+    <div id="transcript" class="transcript" aria-live="polite"></div>
+    <form id="askForm" class="askbar">
+      <input id="ask" type="text" placeholder="Ask your memory… (e.g. “trip to Tokyo”, “Amy's phone number”)" autocomplete="off" autofocus />
+      <button type="submit" class="primary">Ask</button>
+    </form>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script type="module" src="./chat.js"></script>
+</body>
+</html>

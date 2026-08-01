@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/MSIH/life-context/main/schemas/ingest.v1.json",
+  "title": "LifeContext connector ingest payload (v1)",
+  "description": "Single-artifact payload for POST /api/v1/ingest — see docs/04-connector-contract.md §3 for the field-by-field contract. Generated from src/ingest.js's IngestPayloadSchema via z.toJSONSchema(); do not hand-edit — run `npm run schema:ingest`.",
+  "type": "object",
+  "properties": {
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "text_repr": {
+      "type": "string",
+      "minLength": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "place_label": {
+      "type": "string"
+    },
+    "raw_path": {
+      "type": "string"
+    },
+    "extra": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    },
+    "entity_hints": {
+      "type": "array",
+      "items": {}
+    }
+  },
+  "required": [
+    "source",
+    "source_id",
+    "type",
+    "text_repr"
+  ],
+  "additionalProperties": false
+}

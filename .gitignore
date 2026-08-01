@@ -1,0 +1,36 @@
+.vs/
+node_modules/
+.env
+*.local
+.DS_Store
+*.db
+*.db-wal
+*.db-shm
+# Decoded contact photos (vCard import + contacts-UI uploads) — personal data, files on disk
+# pointed at by raw_path / attrs.photoFile; the DB references them, they're never committed.
+raw/
+# Runtime logs: service stdout/stderr AND the per-request access logs (logs/access/, #178) —
+# both are local operational data, never committed.
+logs/
+_*.log
+
+# per-connector runtime spool/state files (connectors/**)
+*-spool.jsonl
+.worktrees/
+.claude/worktrees/
+.claude/settings.local.json
+.claude/.draft-issue-done
+.claude/.pre-pr-review-done
+.claude/.pre-doc-review-done
+.claude/.draft-issue-skip
+.claude/.cloud-issue-done
+
+# Windows service (WinSW) — local machine setup
+LifeContext.exe
+LifeContext.xml
+
+# raw GeoNames dump (scripts/build-places.js input) — never commit; only the derived
+# src/geodata/places.json is checked in
+cities1000.txt
+cities1000.zip
+life-context.db.*

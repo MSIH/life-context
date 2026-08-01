@@ -1,0 +1,197 @@
+/* LifeContext contacts UI (#96). Plain CSS, no framework. Light + dark via prefers-color-scheme. */
+:root {
+  --bg: #f7f7f8; --panel: #ffffff; --border: #e2e2e5; --text: #1a1a1e; --muted: #6b6b73;
+  --accent: #3b5bdb; --accent-text: #ffffff; --danger: #c92a2a; --chip: #eef0f4; --deceased: #8a6d3b;
+  --shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131316; --panel: #1c1c21; --border: #2c2c33; --text: #e8e8ea; --muted: #9a9aa3;
+    --accent: #5c7cfa; --accent-text: #0b0b0d; --danger: #ff6b6b; --chip: #26262d; --deceased: #d9b877;
+    --shadow: 0 1px 3px rgba(0,0,0,.4);
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column;
+}
+button { font: inherit; cursor: pointer; border: 1px solid var(--border); background: var(--panel); color: var(--text); border-radius: 7px; padding: 6px 12px; }
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+button.ghost { border-color: transparent; background: transparent; }
+button.danger { color: var(--danger); }
+input, select, textarea {
+  font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--border);
+  border-radius: 7px; padding: 6px 9px; width: 100%;
+}
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+.topbar { display: flex; gap: 12px; align-items: center; padding: 12px 16px; background: var(--panel); border-bottom: 1px solid var(--border); }
+.topbar h1 { font-size: 18px; margin: 0; }
+.topbar #search { flex: 1; max-width: 420px; }
+.filters { display: flex; gap: 4px; }
+.filters button { padding: 5px 10px; }
+.filters button.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+.layout { flex: 1; display: grid; grid-template-columns: minmax(240px, 340px) 1fr; min-height: 0; }
+.list { overflow-y: auto; border-right: 1px solid var(--border); background: var(--panel); }
+.detail { overflow-y: auto; padding: 24px; }
+@media (max-width: 720px) { .layout { grid-template-columns: 1fr; } .list { max-height: 40vh; } }
+
+.row { padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; gap: 10px; align-items: center; }
+.row:hover { background: var(--chip); }
+.row.selected { background: var(--chip); box-shadow: inset 3px 0 0 var(--accent); }
+.row .avatar { position: relative; width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: var(--chip); flex: none; display: grid; place-items: center; color: var(--muted); font-size: 13px; }
+/* Small camera badge on the avatar corner for contacts that have a photo (#113). */
+.row .photo-badge { position: absolute; bottom: -2px; right: -2px; font-size: 10px; line-height: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 50%; padding: 1px; }
+.row .rname { font-weight: 600; }
+.row .rmeta { color: var(--muted); font-size: 12px; }
+.kind-badge { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; }
+
+.empty { color: var(--muted); }
+.detail h2 { margin: 0; font-size: 22px; }
+.dhead { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 8px; }
+.dhead .photo { width: 84px; height: 84px; border-radius: 12px; object-fit: cover; background: var(--chip); flex: none; display: grid; place-items: center; color: var(--muted); font-size: 12px; text-align: center; }
+.deceased-tag { color: var(--deceased); border: 1px solid var(--deceased); border-radius: 5px; padding: 1px 7px; font-size: 12px; }
+
+fieldset { border: 1px solid var(--border); border-radius: 10px; margin: 14px 0; padding: 14px 16px; }
+legend { padding: 0 6px; color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+.field { margin: 8px 0; }
+.field > label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 3px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.multi .mrow { display: flex; gap: 8px; margin: 6px 0; }
+.multi .mrow input, .multi .mrow textarea { flex: 1; }
+.multi .mrow textarea { resize: vertical; min-height: 2.6em; } /* addresses are multiline (#493) */
+.addlink { background: none; border: none; color: var(--accent); padding: 2px 0; }
+
+.alias { display: flex; gap: 8px; align-items: center; margin: 5px 0; }
+.alias .atype { font-size: 11px; text-transform: uppercase; color: var(--muted); min-width: 52px; }
+.alias .aval { flex: 1; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+
+.rel-group { margin: 8px 0; }
+.rel-group h4 { margin: 6px 0 2px; font-size: 13px; }
+.rel { display: flex; gap: 8px; align-items: center; margin: 3px 0; }
+.rel .rel-name { flex: 1; }
+.rel .rel-dir { font-size: 11px; color: var(--muted); }
+/* [type ▾] [Add] [field] — the Add button sits between the dropdown and the entry field (#127). */
+.addrel { display: grid; grid-template-columns: 150px auto 1fr; gap: 8px; align-items: start; margin-top: 10px; }
+.addrel .reltarget { position: relative; } /* anchor the results dropdown under the field cell */
+.addrel .results { border: 1px solid var(--border); border-radius: 7px; margin-top: 4px; max-height: 160px; overflow-y: auto; background: var(--panel); }
+.addrel .results div { padding: 6px 9px; cursor: pointer; }
+.addrel .results div:hover { background: var(--chip); }
+
+.actions { display: flex; gap: 10px; margin-top: 16px; }
+.hint { color: var(--muted); font-size: 13px; }
+
+/* Duplicates review overlay (#120). A fixed drawer over the content area; z-index below the toast
+   so merge feedback still shows on top. Its own header carries the close button. */
+.duppanel { position: fixed; inset: 0; z-index: 5; background: var(--bg); overflow-y: auto; padding: 20px 24px; }
+.dup-headbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.dup-headbar h2 { margin: 0; font-size: 20px; }
+.dup-pair { border: 1px solid var(--border); border-radius: 10px; background: var(--panel); padding: 14px 16px; margin: 12px 0; box-shadow: var(--shadow); }
+.dup-top { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.dup-score { font-weight: 700; font-size: 13px; color: var(--accent-text); background: var(--accent); border-radius: 6px; padding: 2px 8px; }
+.dup-reason { color: var(--muted); font-size: 13px; }
+/* Stacked, not side-by-side (#394): the drawer is full-viewport, so two flex columns put the two
+   names ~950px apart at 1920px wide -- outside one fixation and with no shared x-column to reveal
+   a shared prefix. Grid rows share a left edge instead, and max-width caps the block so a wide
+   monitor can't re-open the same gap. */
+.dup-choices { display: grid; gap: 6px; max-width: 46rem; }
+/* Fixed 1st column is the radio gutter: it's what makes both .dup-name spans start at an identical
+   x (a flex row can't guarantee that -- the radio's rendered width varies by UA/zoom, #394). 3rd
+   column is a FIXED width (11rem, #404), not auto: each .dup-choice row is its own independent grid
+   formatting context (siblings never share track sizing without CSS Subgrid), so an auto column
+   sized off each row's own stats text would drift between rows whenever the two sides' counts differ
+   in digit count -- exactly the same reason column 1 is a fixed length rather than auto. 4th (auto)
+   right-aligns #id into its own column instead of riding a variable-length name. */
+.dup-choice { display: grid; grid-template-columns: 1.25rem 1fr 11rem auto; align-items: baseline; gap: 8px; border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.dup-choice input { width: auto; } /* input{width:100%} above would let the radio eat the row (same trap as .dir-row, line 116) */
+.dup-name { font-weight: 600; }
+.dup-stats { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Word-level common-prefix/suffix emphasis on the differing segment (#394) -- alignment makes a
+   difference findable, this makes it unmissable. Absent (no <strong>) when nameDiffParts finds no
+   shared word, so it never reads as a whole-name highlight. */
+.dup-diff { color: var(--accent); }
+.dup-id { color: var(--muted); font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.dup-actions { display: flex; gap: 12px; align-items: center; margin-top: 10px; }
+/* Manual merge form (#303): name any two contacts, unfiltered by kind (an org<->org pair, or a
+   409 alias-conflict pair the detector never surfaced). Sits above #dupList in the same panel. */
+.dup-manual { border: 1px solid var(--border); border-radius: 10px; background: var(--panel); padding: 14px 16px; margin-bottom: 16px; }
+.dup-manual h3 { margin: 0 0 10px; font-size: 15px; }
+.dup-manual-row { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+.dup-manual .reltarget { position: relative; flex: 1; min-width: 200px; }
+.dup-manual .reltarget label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.dup-manual .results { border: 1px solid var(--border); border-radius: 7px; margin-top: 4px; max-height: 160px; overflow-y: auto; background: var(--panel); position: absolute; z-index: 1; width: 100%; }
+.dup-manual .results div { padding: 6px 9px; cursor: pointer; }
+.dup-manual .results div:hover { background: var(--chip); }
+/* proposed-entities review (#143): decision fields under the name row; reuses .dup-* + .kind-badge. */
+.prop-fields { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; }
+/* side contact directory (#299): rows reuse .dup-pair/.dup-top/.dup-actions; only the impact badge,
+   the handle list, and the already-curated (greyed, still clickable) state are new. */
+.dir-row .dup-top { gap: 8px; }
+/* The form styling sets inputs to width:100%, which would let the row checkbox eat the whole flex
+   line and push the name off the panel — same reason .dup-choice input exists above. */
+.dir-row .dup-top input[type="checkbox"] { width: auto; flex: none; margin: 0; }
+.dir-row .dup-name { flex: 1; }
+.dir-impact { font-weight: 600; font-size: 12px; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; padding: 1px 7px; white-space: nowrap; }
+.dir-handles { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; margin: 6px 0 2px; }
+.dir-row.curated { opacity: .6; }
+/* offset pager (#494): disabled at the ends rather than hidden, matching #dirPromote's disabled-at-
+   zero-selection idiom, so the controls never reflow and stay discoverable. */
+.dir-pager { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 10px 0 2px; }
+.dir-pager button:disabled { opacity: .4; cursor: default; }
+.dir-pagesize { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.linklike { background: none; border: 0; padding: 0; color: inherit; font: inherit; text-align: left; text-decoration: underline; cursor: pointer; }
+#dirSearch { flex: 1; min-width: 140px; max-width: 320px; margin: 0 10px; }
+
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 8px; box-shadow: var(--shadow); z-index: 10; }
+.toast.err { background: var(--danger); color: #fff; }
+.toast-action { background: transparent; border: 1px solid currentColor; color: inherit; padding: 2px 8px; border-radius: 6px; font-size: 13px; margin-left: 6px; }
+
+/* --- cross-page nav (contacts <-> ask), shared topbar --- */
+.navlinks { display: flex; gap: 4px; }
+.navlinks a { padding: 5px 10px; border-radius: 7px; text-decoration: none; color: var(--muted); border: 1px solid transparent; }
+.navlinks a:hover { color: var(--text); border-color: var(--accent); }
+.navlinks a.active { background: var(--accent); color: var(--accent-text); }
+
+/* --- webchat sidecar (#124): a transcript of queries + result cards, plus a bottom ask bar --- */
+.chat { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.transcript { flex: 1; overflow-y: auto; padding: 20px 16px; }
+.turn { max-width: 820px; margin: 0 auto 22px; }
+.turn .q { display: flex; gap: 8px; align-items: baseline; margin-bottom: 10px; }
+.turn .q-mode { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border: 1px solid var(--border); border-radius: 5px; padding: 1px 6px; flex: none; }
+.turn .q-text { font-weight: 600; font-size: 17px; }
+.results { display: flex; flex-direction: column; gap: 10px; }
+.thinking { color: var(--muted); display: flex; align-items: center; gap: 8px; }
+/* In-flight spinner (#180): a theme-aware ring (track = --border, head = --accent). Under
+   prefers-reduced-motion the rotation is swapped for a non-rotational opacity pulse (#185) — a
+   spin reads as vestibular motion, but an opacity fade is acceptable under reduced-motion, and a
+   static ring beside static text looked frozen through the multi-second query wait. */
+.spinner { flex: none; width: 15px; height: 15px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: pulse 1.2s ease-in-out infinite; } }
+/* Live in-flight seconds counter beside the label (#185); muted + tabular so the ticking digits
+   don't reflow the line. */
+.elapsed { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12px; }
+/* Query-duration chip above the cards: `N results · X.XXs` (self-sized, not full-width). */
+.results-meta { align-self: flex-start; margin: 0; font-size: 12px; color: var(--muted); background: var(--chip); border-radius: 6px; padding: 2px 9px; }
+/* Deterministic result-set summary header (#353): one line above the cards, e.g.
+   "55 photos · Ocean City, Maryland · 2 visits: 2019-07-28–30, 2021-06-05". */
+.summary { margin: 0; font-weight: 600; font-size: 14px; }
+
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; box-shadow: var(--shadow); }
+.card-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.card .chip { font-size: 11px; color: var(--muted); background: var(--chip); border-radius: 5px; padding: 1px 7px; }
+.card-body { margin: 0; white-space: pre-wrap; }
+.card-links { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.card .chip.entity { color: var(--accent); border: 1px solid var(--border); background: transparent; }
+
+/* Center the input+button group on the transcript's ~820px column: the input grows but caps at
+   760px, so on wide screens the leftover space is distributed by justify-content (not dumped as a
+   gap after a full-width input, which would strand the button at the far right). */
+.askbar { display: flex; gap: 10px; justify-content: center; padding: 14px 16px; border-top: 1px solid var(--border); background: var(--panel); }
+.askbar input { flex: 1 1 auto; max-width: 760px; }
+.askbar button { flex: none; }
+.empty.err { color: var(--danger); }

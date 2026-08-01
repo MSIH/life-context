@@ -1,0 +1,4 @@
+# Normalize line endings. Shell hooks MUST stay LF — a CRLF shebang breaks bash
+# ("bad interpreter") on Linux/cloud checkouts.
+* text=auto
+*.sh text eol=lf
